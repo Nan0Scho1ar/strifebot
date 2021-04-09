@@ -280,13 +280,23 @@ class MiscCog(commands.Cog):
         sys.stdout.write(f'{ctx.message.author} ran command "mock"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "mock"')
-        await ctx.message.delete()
-        ctx.message.content = ctx.message.content[len('|mock'):]
-        msg = str(ctx.message.content)
-        for i in range(0, len(msg)):
-            choices = [msg[i].lower(), msg[i].upper()]
-            msg = msg[:i] + random.choice(choices) + msg[i+1:]
+        if ctx.message.reference is not None:
+            print(ctx.message.reference)
+            message_id = ctx.message.reference.message_id
+            print(message_id)
+            msg = str((await ctx.fetch_message(message_id)).content)
+        else:
+            msg = ctx.message.content[len('|mock'):]
+        for i in range(0, len(msg) - 1):
+            if i > 1 and msg[i-2:i].upper() == msg[i-2:i]:
+                msg = msg[:i] + msg[i].lower() + msg[i+1:]
+            elif i > 1 and msg[i-2:i].lower() == msg[i-2:i]:
+                msg = msg[:i] + msg[i].upper() + msg[i+1:]
+            else:
+                choices = [msg[i].lower(), msg[i].upper()]
+                msg = msg[:i] + random.choice(choices) + msg[i+1:]
         em = discord.Embed(title=msg, description="", colour=0x36393F)
+        await ctx.message.delete()
         await ctx.message.channel.send("", embed=em)
 
     @mock.error
@@ -420,10 +430,10 @@ class MiscCog(commands.Cog):
         sys.stdout.write(f'{ctx.message.author} ran command "purge"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "purge"')
-        async for history in ctx.message.channel.history(limit=int(num)):
+        async for history in ctx.message.channel.history(limit=int(num)+1):
             msg = await ctx.message.channel.fetch_message(history.id)
             await msg.delete()
-        em = discord.Embed(title="", description=f'{ctx.message.author} purged {num} messages', colour=0x36393F)
+        em = discord.Embed(title="", description=f'Purged {num} messages.', colour=0x36393F)
         em.set_author(name=ctx.message.author.display_name, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
         await ctx.message.channel.send("", embed=em)
 

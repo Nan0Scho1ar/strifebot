@@ -114,7 +114,7 @@ class AdminCog(commands.Cog):
 
     @commands.command(pass_context=True, name='mute')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
-    async def mute(self, ctx, mention, duration):
+    async def mute(self, ctx, mention, duration="1h"):
         """Mute a user"""
         sys.stdout.write(f'{ctx.message.author} ran command "mute"\n')
         sys.stdout.flush()
