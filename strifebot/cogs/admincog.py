@@ -2,6 +2,7 @@ from discord.ext import commands
 import logging
 import discord
 import sys
+import asyncio
 
 f = open("strife.conf", "r")
 for line in f:
@@ -92,7 +93,7 @@ class AdminCog(commands.Cog):
         if len(msg) == 2:
             reason = "No reason provided"
         else:
-            reason = [2].strip()
+            reason = msg[2].strip()
         for mention in ctx.message.mentions:
             await mention.send("Your conduct has been flagged by server staff for the following reasons:{}\n\nBe aware penalties apply for repeated transgressions!".format(reason))
             em = discord.Embed(title="Warned {}".format(mention), description="Reason: {}".format(reason), colour=0xF2A013)
@@ -113,7 +114,7 @@ class AdminCog(commands.Cog):
 
     @commands.command(pass_context=True, name='mute')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
-    async def mute(self, ctx):
+    async def mute(self, ctx, mention, duration):
         """Mute a user"""
         sys.stdout.write(f'{ctx.message.author} ran command "mute"\n')
         sys.stdout.flush()
@@ -123,36 +124,68 @@ class AdminCog(commands.Cog):
         peasant_role = ctx.guild.get_role(peasant_roleid)
         reading_role = ctx.guild.get_role(ghost_roleid)
         ghost_role = ctx.guild.get_role(ghost_roleid)
-        if ctx.message.content[-1] not in ['s', 'm', 'h', 'd', 'w', 'y']:
-            await ctx.message.channel.send("Invalid format")
+        mention = ctx.message.mentions[0]
+
+        msg = ctx.message.content.split(" ")
+        reason = ""
+        if len(msg) > 3:
+            reason = " ".join(msg[3:])
+
+
+        if duration[-1] == 's':
+            num_seconds = int(duration[:-1])
+        elif duration[-1] == 'm':
+            num_seconds = int(duration[:-1]) * 60
+        elif duration[-1] == 'h':
+            num_seconds = int(duration[:-1]) * 60 * 60
+        elif duration[-1] == 'd':
+            num_seconds = int(duration[:-1]) * 60 * 60 * 24
+        elif duration[-1] == 'w':
+            num_seconds = int(duration[:-1]) * 60 * 60 * 24 * 7
+        else:
+            await ctx.message.channel.send("Invalid time format")
             return;
 
-        def check(m):
-            return m.author == ctx.message.author and m.channel == ctx.message.channel
+        if reason == "":
+            def check(m):
+                return m.author == ctx.message.author and m.channel == ctx.message.channel
+            try:
+                await ctx.message.channel.send("Please respond with a reason for this mute")
+                response = await self.bot.wait_for('message', timeout=60.0, check=check)
+                reason = response.content
+            except asyncio.TimeoutError:
+                await ctx.message.channel.send('No reason provided')
+                reason = "No reason provided"
 
-        try:
-            #Do this multiple times because bad internet
-            for i in range(1,5):
-                await mention.add_roles(peasant_role)
-                await mention.remove_roles(commoners_role)
-                await mention.remove_roles(ghost_role)
-                await mention.remove_roles(reading_role)
-            await ctx.message.channel.send("Please respond with a reason for this mute")
-            msg = await self.bot.wait_for('message', timeout=240.0, check=check)
-        except asyncio.TimeoutError:
-            await ctx.message.channel.send('No reason provided')
-        else:
-            reason = msg.content
-            await ctx.message.channel.send("muted {} for {}".format(ctx.message.mentions[0], reason))
-
-        em = discord.Embed(title="Muted {}".format(mention), description="Reason: {}".format(reason), colour=0xF2A013)
+        await mention.remove_roles(commoners_role)
+        await mention.remove_roles(ghost_role)
+        await mention.remove_roles(reading_role)
+        await mention.add_roles(peasant_role)
+        await ctx.message.channel.send("muted {} for {}\nReason `{}`".format(ctx.message.mentions[0], duration, reason))
+        em = discord.Embed(title="Muted {}".format(mention), description="Duration: {}\n\nReason: {}".format(duration, reason), colour=0xF2A013)
         em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(mention))
         em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
         await namelessLogs.send(embed=em)
 
+        #Don't do this as a timer it's terrible
+        def check2(m):
+            return False
+        try:
+            reason = await self.bot.wait_for('message', timeout=num_seconds, check=check2)
+        except asyncio.TimeoutError:
+            await mention.remove_roles(peasant_role)
+            await mention.remove_roles(ghost_role)
+            await mention.remove_roles(reading_role)
+            await mention.add_roles(commoners_role)
+            em = discord.Embed(title="Unmuted {}".format(mention), description="Reason: Mute duration expired", colour=0x7eff00)
+            em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(mention))
+            em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
+            await namelessLogs.send(embed=em)
+
+
     @mute.error
     async def mute_error(self, ctx, error):
-        logging.error('Command "mute" failed due to the following error:')
+        logging.error('Command "mute" failed due to the following error: {}'.format(error))
         logging.error(error)
         await ctx.send('Error processing that request')
 
@@ -173,12 +206,10 @@ class AdminCog(commands.Cog):
 
         reason = ctx.message.content.split(">")[-1].strip()
         for mention in ctx.message.mentions:
-            #Do this multiple times because bad internet
-            for i in range(1,5):
-                await mention.add_roles(commoners_role)
-                await mention.remove_roles(peasant_role)
-                await mention.remove_roles(ghost_role)
-                await mention.remove_roles(reading_role)
+            await mention.remove_roles(peasant_role)
+            await mention.remove_roles(ghost_role)
+            await mention.remove_roles(reading_role)
+            await mention.add_roles(commoners_role)
             em = discord.Embed(title="Unmuted {}".format(mention), description="Reason: {}".format(reason), colour=0x7eff00)
             em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(mention))
             em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
@@ -220,24 +251,29 @@ class AdminCog(commands.Cog):
 
     @commands.command(pass_context=True, name='unban')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
-    async def unban(self, ctx):
+    async def unban(self, ctx, user_id, reason="No reason provided"):
         """unban a user"""
         sys.stdout.write(f'{ctx.message.author} ran command "unban"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "unban"')
-        reason = ctx.message.content.split(">")[-1].strip()
+        print(user_id)
+        print(reason)
+        print(self)
+        print(ctx)
         namelessLogs = ctx.bot.get_channel(logs_channelid)
-        for mention in ctx.message.mentions:
-            await ctx.guild.unban(mention)
-            em = discord.Embed(title="Banned {}".format(mention), description="Reason: {}".format(reason), colour=0xD64848)
-            em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(mention))
-            em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
-            await namelessLogs.send(embed=em)
+        print(namelessLogs)
+        user = await ctx.bot.fetch_user(user_id)
+        print(user)
+        await ctx.guild.unban(user)
+        em = discord.Embed(title="Unbanned {}".format(user_id), description="Reason: {}".format(reason), colour=0xD64848)
+        em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(user))
+        em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
+        await namelessLogs.send(embed=em)
         await ctx.message.delete()
 
     @unban.error
     async def unban_error(self, ctx, error):
-        logging.error('Command "unban" failed due to the following error:')
+        logging.error('Command "unban" failed due to the following error: {}'.format(error))
         logging.error(error)
         await ctx.send('Error processing that request')
 
@@ -399,7 +435,7 @@ class AdminCog(commands.Cog):
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "logs"')
         namelessLogs = ctx.bot.get_channel(logs_channelid)
-        for mention in message.mentions:
+        for mention in ctx.message.mentions:
             warnCounter = 0
             muteCounter = 0
             commendCounter = 0
@@ -407,23 +443,23 @@ class AdminCog(commands.Cog):
             kickCounter = 0
             banCounter = 0
 
-            async for msg in client.logs_from(namelessLogs):
+            async for msg in namelessLogs.history():
                 for embed in msg.embeds:
-                    if embed["title"] == "Warned {}".format(mention):
+                    if embed.title == "Warned {}".format(mention):
                         warnCounter += 1
-                    elif embed["title"] == "Muted {}".format(mention):
+                    elif embed.title == "Muted {}".format(mention):
                         muteCounter += 1
-                    elif embed["title"] == "Commended {}".format(mention):
+                    elif embed.title == "Commended {}".format(mention):
                         commendCounter += 1
-                    elif embed["title"] == "Sent {} to reading".format(mention):
+                    elif embed.title == "Sent {} to reading".format(mention):
                         readCounter += 1
-                    elif embed["title"] == "Kicked {}".format(mention):
+                    elif embed.title == "Kicked {}".format(mention):
                         kickCounter += 1
-                    elif embed["title"] == "Banned {}".format(mention):
+                    elif embed.title == "Banned {}".format(mention):
                         banCounter += 1
             em = discord.Embed(title="Log for {}".format(mention), description="Warnings: {}\nMutes: {}\nCommendations: {}\nReadings: {}\nKicks: {}\nBans: {}".format(warnCounter, muteCounter, commendCounter, readCounter, kickCounter, banCounter), colour=0x7eff00)
             em.set_thumbnail(url="httpdds://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(mention))
-            await message.channel.send("```Log for {}\n\nWarnings: {}\nMutes: {}\nCommendations: {}\nReadings: {}\nKicks: {}\nBans: {}```".format(mention, warnCounter, muteCounter, commendCounter, readCounter, kickCounter, banCounter))
+            await ctx.message.channel.send("```Log for {}\n\nWarnings: {}\nMutes: {}\nCommendations: {}\nReadings: {}\nKicks: {}\nBans: {}```".format(mention, warnCounter, muteCounter, commendCounter, readCounter, kickCounter, banCounter))
         await ctx.message.delete()
 
     @logs.error

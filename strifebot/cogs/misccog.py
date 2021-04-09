@@ -8,7 +8,6 @@ import random
 
 f = open("nan0.playlist", "r")
 nan0 = []
-logs_channelid = "577806825844506625"
 for line in f:
     nan0.append(line)
 f = open("strife.conf", "r")
@@ -40,27 +39,31 @@ for line in f:
     elif "bump_channelid" in line:
         bump_channelid = int(line.split("=")[-1:][0].strip())
 
+    elif "logs_channelid" in line:
+        logs_channelid = int(line.split("=")[-1:][0].strip())
+
+
 async def getRulesEmbed():
     embedtext = '''
-1. Do not violate the Discord terms of service, which includes posting indecent or illegal material. (https://discordapp.com/terms)  
+1. Do not violate the Discord terms of service, which includes posting indecent or illegal material. (https://discordapp.com/terms)
 
 
-2. Always attempt to engage politely and charitably wherever possible, especially when interacting with newcomers. Do ***NOT*** locally mute a user, report them to a member of staff.  
+2. Always attempt to engage politely and charitably wherever possible, especially when interacting with newcomers. Do ***NOT*** locally mute a user, report them to a member of staff.
 
 
-3. Doxing, or the dissemination of personal information via the internet, is not permitted in any way.  
+3. Doxing, or the dissemination of personal information via the internet, is not permitted in any way.
 
 
-4. Please try to keep all discussions within their appropriate channels - shitposting, trolling and memes belong in their respective channels.  
+4. Please try to keep all discussions within their appropriate channels - shitposting, trolling and memes belong in their respective channels.
 
 
-5. Do not engage in toxic or disingenuous conduct, especially that conduct which is contrary to either the *implicit* or *explicit* social contract of this server.  
+5. Do not engage in toxic or disingenuous conduct, especially that conduct which is contrary to either the *implicit* or *explicit* social contract of this server.
 
 
-6. Refrain from using our community only as a platform for self-promotion - this includes DM advertising.  
+6. Refrain from using our community only as a platform for self-promotion - this includes DM advertising.
 
 
-7. We reserve the right to record, at all times, any conversations that we deem of a sufficient quality to promote intellectual engagement on this platform.  
+7. We reserve the right to record, at all times, any conversations that we deem of a sufficient quality to promote intellectual engagement on this platform.
 
 
 8. Follow the instructions of our staff - the rules are enforced according to their discretion, and any complaints are to be handled after the fact by a different member of staff; hence, argumentation regarding who has or has not broken the rules is largely out of order, though it may be tolerated by some of our staff.
@@ -126,7 +129,7 @@ class MiscCog(commands.Cog):
         sys.stdout.write(f'{ctx.message.author} ran command "dump"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "dump"')
-        await ctx.send("```" + open("./../logs/nameless.log", "r").read()[-1994:] + "```")
+        await ctx.send("```" + open("./../logs/strife.log", "r").read()[-1994:] + "```")
 
     @dump.error
     async def dump_error(self, ctx, error):
@@ -143,7 +146,7 @@ class MiscCog(commands.Cog):
         sys.stdout.write(f'{ctx.message.author} ran command "dumpe"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "dumpe"')
-        await ctx.send("```" + open("./../logs/nameless_error.log", "r").read()[-1994:] + "```")
+        await ctx.send("```" + open("./../logs/strife_error.log", "r").read()[-1994:] + "```")
 
     @dump.error
     async def dumpe_error(self, ctx, error):
@@ -205,24 +208,24 @@ class MiscCog(commands.Cog):
 
     #__________________________________________________
 
-    @commands.command(pass_context=True, name='ndjt')
-    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
-    async def ndjt(self, ctx):
-        """posts some of nan0scho1ar's music"""
-        sys.stdout.write(f'{ctx.message.author} ran command "ndjt"\n')
-        sys.stdout.flush()
-        logging.info(f'{ctx.message.author} ran command "ndjt"')
-        count = int(ctx.message.content[len('|ndjt '):])
-        bump_channel = self.bot.get_channel(bump_channelid)
-        for i in range(0,count):
-            song = random.choice(nan0)
-            await bump_channel.send(song)
-
-    @ndjt.error
-    async def ndjt_error(self, ctx, error):
-        logging.error('Command "ndjt" failed due to the following error:')
-        logging.error(error)
-        await ctx.send('Error processing that request')
+    #@commands.command(pass_context=True, name='ndjt')
+    #@commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
+    #async def ndjt(self, ctx):
+        #"""posts some of nan0scho1ar's music"""
+        #sys.stdout.write(f'{ctx.message.author} ran command "ndjt"\n')
+        #sys.stdout.flush()
+        #logging.info(f'{ctx.message.author} ran command "ndjt"')
+        #count = int(ctx.message.content[len('|ndjt '):])
+        #bump_channel = self.bot.get_channel(bump_channelid)
+        #for i in range(0,count):
+            #song = random.choice(nan0)
+            #await bump_channel.send(song)
+#
+    #@ndjt.error
+    #async def ndjt_error(self, ctx, error):
+        #logging.error('Command "ndjt" failed due to the following error:')
+        #logging.error(error)
+        #await ctx.send('Error processing that request')
 
     #__________________________________________________
 
@@ -239,7 +242,8 @@ class MiscCog(commands.Cog):
             await ctx.message.channel.send("{}, please read the rules and guidelines in the {} text chat.".format(member.mention, rules.mention))
             logs_channel = self.bot.get_channel(logs_channelid)
             logs_channel.send("Warned " + member.mention + " to read the rules.")
-            await ctx.message.send(ctx.message.content)
+            em = await getRulesEmbed()
+            await member.send("", embed=em)
         await ctx.message.delete()
 
     @rules.error
@@ -269,6 +273,50 @@ class MiscCog(commands.Cog):
 
     #__________________________________________________
 
+    @commands.command(pass_context=True, name='mock')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
+    async def mock(self, ctx):
+        """Creates an embed and sets the title"""
+        sys.stdout.write(f'{ctx.message.author} ran command "mock"\n')
+        sys.stdout.flush()
+        logging.info(f'{ctx.message.author} ran command "mock"')
+        await ctx.message.delete()
+        ctx.message.content = ctx.message.content[len('|mock'):]
+        msg = str(ctx.message.content)
+        for i in range(0, len(msg)):
+            choices = [msg[i].lower(), msg[i].upper()]
+            msg = msg[:i] + random.choice(choices) + msg[i+1:]
+        em = discord.Embed(title=msg, description="", colour=0x36393F)
+        await ctx.message.channel.send("", embed=em)
+
+    @mock.error
+    async def embed_error(self, ctx, error):
+        logging.error('Command "mock" failed due to the following error:')
+        logging.error(error)
+        await ctx.send('Error processing that request')
+
+    #__________________________________________________
+
+    @commands.command(pass_context=True, name='bold')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
+    async def bold(self, ctx):
+        """Creates an embed and sets the title"""
+        sys.stdout.write(f'{ctx.message.author} ran command "bold"\n')
+        sys.stdout.flush()
+        logging.info(f'{ctx.message.author} ran command "bold"')
+        await ctx.message.delete()
+        ctx.message.content = ctx.message.content[len('|bold'):]
+        em = discord.Embed(title=ctx.message.content.upper(), description="", colour=0x36393F)
+        await ctx.message.channel.send("", embed=em)
+
+    @bold.error
+    async def embed_error(self, ctx, error):
+        logging.error('Command "bold" failed due to the following error:')
+        logging.error(error)
+        await ctx.send('Error processing that request')
+
+    #__________________________________________________
+
     @commands.command(pass_context=True, name='embed')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
     async def embed(self, ctx):
@@ -293,31 +341,31 @@ class MiscCog(commands.Cog):
 
     #__________________________________________________
 
-    @commands.command(pass_context=True, name='embedfield')  
-    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb) 
-    async def embedfield(self, ctx):  
+    @commands.command(pass_context=True, name='embedfield')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
+    async def embedfield(self, ctx):
         """Adds a field to the embed"""
         sys.stdout.write(f'{ctx.message.author} ran command "embedfield"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "embedfield"')
-        ctx.message.content = ctx.message.content[len('|embedfield'):]  
-        await ctx.message.delete()  
-        edited = False  
-        async for history in ctx.message.channel.history(limit=20):  
-            if edited == False:  
-                msg = await ctx.message.channel.fetch_message(history.id)  
-                if history.author == ctx.bot.user:  
-                    for embed in msg.embeds:  
-                        if embed.author.name == ctx.message.author.display_name:  
-                            data = ctx.message.content.split("|")  
-                            embed.add_field(name=data[0], value=data[1], inline=True)  
-                            await msg.edit(embed=embed)  
-                            edited = True  
-                            mentions = ""  
-                            for member in ctx.message.mentions:  
-                                mentions += member.mention + " "  
-                                if not mentions == "":  
-                                    await ctx.message.channel.send(mentions) 
+        ctx.message.content = ctx.message.content[len('|embedfield'):]
+        await ctx.message.delete()
+        edited = False
+        async for history in ctx.message.channel.history(limit=20):
+            if edited == False:
+                msg = await ctx.message.channel.fetch_message(history.id)
+                if history.author == ctx.bot.user:
+                    for embed in msg.embeds:
+                        if embed.author.name == ctx.message.author.display_name:
+                            data = ctx.message.content.split("|")
+                            embed.add_field(name=data[0], value=data[1], inline=True)
+                            await msg.edit(embed=embed)
+                            edited = True
+                            mentions = ""
+                            for member in ctx.message.mentions:
+                                mentions += member.mention + " "
+                                if not mentions == "":
+                                    await ctx.message.channel.send(mentions)
 
     @embedfield.error
     async def embedfield_error(self, ctx, error):
@@ -367,14 +415,17 @@ class MiscCog(commands.Cog):
 
     @commands.command(pass_context=True, name='purge')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, cbbb)
-    async def purge(self, ctx, arg1):
+    async def purge(self, ctx, num):
         """Purges a number of messages"""
         sys.stdout.write(f'{ctx.message.author} ran command "purge"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "purge"')
-        async for history in ctx.message.channel.history(limit=int(arg1)):
+        async for history in ctx.message.channel.history(limit=int(num)):
             msg = await ctx.message.channel.fetch_message(history.id)
             await msg.delete()
+        em = discord.Embed(title="", description=f'{ctx.message.author} purged {num} messages', colour=0x36393F)
+        em.set_author(name=ctx.message.author.display_name, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
+        await ctx.message.channel.send("", embed=em)
 
     @purge.error
     async def purge_error(self, ctx, error):
