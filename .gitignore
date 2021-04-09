@@ -1,0 +1,7 @@
+node_modules/
+/logs/
+*.pyc
+*.swp
+*.sqlite
+*.conf
+/strifebot/strife.conf
