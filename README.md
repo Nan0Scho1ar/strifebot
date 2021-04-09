@@ -44,4 +44,5 @@ wikipedia           1.4.0
 wordnik-py3         2.1.2
 xmltodict           0.12.0
 youtube-dl          2020.12.9
+flask               1.1.2
 ```
