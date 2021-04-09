@@ -30,3 +30,18 @@ logs_channelid=
 
 TOKEN=
 ```
+
+python package-list (Tested working versions)
+```
+beautifulsoup4      4.9.3
+discord             1.0.1
+discord.py          1.5.1
+humanize            3.1.0
+six                 1.15.0
+urbandictionary     1.1
+wavelink            0.9.6
+wikipedia           1.4.0
+wordnik-py3         2.1.2
+xmltodict           0.12.0
+youtube-dl          2020.12.9
+```
