@@ -1,7 +1,7 @@
 # Strifebot
-##Discord bot for the strife discord server
+## Discord bot for the strife discord server
 
-##Instructions
+## Instructions
 1. install python libraries using pip
 2. install pm2 using npm
 3. create db topics.sqlite
@@ -10,7 +10,7 @@
 5. Start strife script in startup dir with pm2
 
 
-##Example strife.conf
+## Example strife.conf
 ```
 #Strife
 owner_roleid=
@@ -31,7 +31,7 @@ logs_channelid=
 TOKEN=
 ```
 
-python package-list (Tested working versions)
+## python package-list (Tested working versions)
 ```
 beautifulsoup4      4.9.3
 discord             1.0.1
