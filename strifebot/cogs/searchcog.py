@@ -177,11 +177,19 @@ async def define(dictChoice, word):
             #body += "{}\n{}\n{}\n\n".format(definition.partOfSpeech, definition.text, definition.sourceDictionary)
     body += attr
     body = str(body)
-    body = re.sub("\<xref\>", "", body)
-    body = re.sub("\</xref\>", "", body)
+    body = re.sub("\<i\>", "*", body)
+    body = re.sub("\</i\>", "*", body)
+    body = re.sub("\<strong\>", "**", body)
+    body = re.sub("\</strong\>", "**", body)
     body = re.sub("\<em\>", "**", body)
     body = re.sub("\</em\>", "**", body)
+    body = re.sub("\</", "<", body)
+    body = re.sub("\<internalXref.*\>", "", body)
+    body = re.sub("\<spn\>", "", body)
+    body = re.sub("\<altname\>", "", body)
+    body = re.sub("\<xref\>", "", body)
     if body == "":
+
         return discord.Embed(title="Definitons for {}".format(word), description="Could not find definition matching search parameters", colour=0x7eff00)
     if pospeech == '':
         em = discord.Embed(title="Definitons for {}".format(word), description=body, colour=0x7eff00)
