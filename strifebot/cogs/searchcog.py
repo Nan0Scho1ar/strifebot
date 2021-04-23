@@ -5,14 +5,9 @@ from wordnik import *
 import wikipedia
 import discord
 from discord.ext import commands
-
+import re
 
 WORDNIK_URL = 'http://api.wordnik.com/v4'
-WORKNIK_KEY = '685d7ec4b42259be7800c0d654d066fe5a2a20cedc7c25a3c'
-
-wordnikClient = swagger.ApiClient(WORKNIK_KEY, WORDNIK_URL)
-wordApi = WordApi.WordApi(wordnikClient)
-
 
 f = open("strife.conf", "r")
 for line in f:
@@ -32,6 +27,11 @@ for line in f:
         clerk_roleid = int(line.split("=")[-1:][0].strip())
     elif "cbbb" in line:
         cbbb = int(line.split("=")[-1:][0].strip())
+    elif "WORKNIK_KEY" in line:
+        WORKNIK_KEY = line.split("=")[-1:][0].strip()
+
+wordnikClient = swagger.ApiClient(WORKNIK_KEY, WORDNIK_URL)
+wordApi = WordApi.WordApi(wordnikClient)
 
 # START SEARCH FUNCTIONS
 
@@ -176,12 +176,17 @@ async def define(dictChoice, word):
                 body += "{}\n\n".format(definition.text)
             #body += "{}\n{}\n{}\n\n".format(definition.partOfSpeech, definition.text, definition.sourceDictionary)
     body += attr
+    body = str(body)
+    body = re.sub("\<xref\>", "", body)
+    body = re.sub("\</xref\>", "", body)
+    body = re.sub("\<em\>", "**", body)
+    body = re.sub("\</em\>", "**", body)
     if body == "":
         return discord.Embed(title="Definitons for {}".format(word), description="Could not find definition matching search parameters", colour=0x7eff00)
     if pospeech == '':
-        em = discord.Embed(title="Definitons for {}".format(word), description=str(body), colour=0x7eff00)
+        em = discord.Embed(title="Definitons for {}".format(word), description=body, colour=0x7eff00)
     else:
-        em = discord.Embed(title="{} definitons for {}".format(pospeech, word), description=str(body), colour=0x7eff00)
+        em = discord.Embed(title="{} definitons for {}".format(pospeech, word), description=body, colour=0x7eff00)
     #em.set_author(name='', icon_url=client.user.default_avatar_url)
     return em
 

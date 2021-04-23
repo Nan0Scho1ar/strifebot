@@ -2,7 +2,6 @@
 import sys
 import logging
 import discord
-import sys
 import random
 
 
