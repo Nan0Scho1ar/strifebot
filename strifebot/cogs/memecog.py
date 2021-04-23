@@ -12,12 +12,8 @@ memes = [
            'responses': ["test1 1"]
          },
          {
-           'trigger': "test2",
-           'responses': ["test2 1", "test2 2", "test2 3"]
-         },
-         {
-           'trigger': "test3",
-           'responses': ["test3 1", "test3 2", "test3 3"]
+           'trigger': "both sides",
+           'responses': ["Perfectly balanced, as all things should be. <@290374730991665154>"]
          },
          {
            'trigger': "test4",
@@ -30,6 +26,13 @@ memes = [
          {
            'trigger': "test6",
            'responses': ["test6 1", "test6 2"]
+         },
+        ]
+
+memes_case_insensitive = [
+        {
+           'trigger': "test3",
+           'responses': ["test3 1", "test3 2", "test3 3"]
          },
         ]
 
@@ -72,6 +75,11 @@ class MemeCog(commands.Cog):
                 return
             for meme in memes:
                 if meme["trigger"] in message.content:
+                    await message.channel.send(random.choice(meme["responses"]))
+                    return
+            #Case insensitive trigger
+            for meme in memes_case_insensitive:
+                if meme["trigger"] in message.content.lower():
                     await message.channel.send(random.choice(meme["responses"]))
                     return
         except:

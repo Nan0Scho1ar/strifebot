@@ -45,43 +45,41 @@ for line in f:
 
 async def getRulesEmbed():
     embedtext = '''
-1. Do not violate the Discord terms of service, which includes posting indecent or illegal material. (https://discordapp.com/terms)
+    Rule 1
+Follow the Discord ToS and Community Guidelines
+The guidelines specifically mention harassment, threats of violence, attacks based on race or sex, etc. Follow these to avoid endangering the server.
+https://discord.com/terms
+https://discord.com/guidelines
 
 
-2. Always attempt to engage politely and charitably wherever possible, especially when interacting with newcomers. Do ***NOT*** locally mute a user, report them to a member of staff.
+Rule 2
+Keep content and discussion in their appropriate channels.
+Channel names indicate what the channels are meant for, and channel descriptions elaborate on what specifically belongs in each channel.
+Rule 3 
+Don't be excessively toxic towards members.
+Inflammatory and toxic behavior towards other members will be moderated. Insults aren't necessarily moderated, but severe ones or continued mild toxicity over a prolonged period of time will be addressed. Examples of severe insults include attacks based on personal traits, unjustified accusations meant to defame, etc.
 
 
-3. Doxing, or the dissemination of personal information via the internet, is not permitted in any way.
+Rule 4 
+Don't be disruptive towards serious conversations.
+Trolling, shitposting, LARPing and spamming that stifles, interrupts or prevents serious discussion will be moderated. Serious conversation refers to conversation that does not fall into any of the categories mentioned above.
 
 
-4. Please try to keep all discussions within their appropriate channels - shitposting, trolling and memes belong in their respective channels.
+Rule 5
+Argue honestly, genuinely and charitably for claims you make and when objecting to others.
+A refusal to defend claims put forth, evading objections, soapboxing
+
+Do not simply use the server as a platform to preach your beliefs without any intent to engage in honest and critical discussion of them. Represent your beliefs honestly and engage in debates genuinely. Soapboxing, repeating beliefs you refuse to defend, and evasive behavior will be moderated.
+Rule 6
+Cases that fall just outside of the other rules can also be moderated if they are deemed undesirable by staff.
+Some behaviours can be deemed unacceptable by staff even if the rules don't explicitly mention them. This is especially common if the behaviours come close to those condemned by the rules or are subject to interpretation. Whether the member is intentionally skirting around the rules to toe the line of what is acceptable or is doing it completely accidentally, staff will inform the member that that their behaviour is undesirable when it occurs and attempt to reach an agreement. Continuation of the behaviour after having been informed of the staff team's stance on it will lead to moderation.
 
 
-5. Do not engage in toxic or disingenuous conduct, especially that conduct which is contrary to either the *implicit* or *explicit* social contract of this server.
-
-
-6. Refrain from using our community only as a platform for self-promotion - this includes DM advertising.
-
-
-7. We reserve the right to record, at all times, any conversations that we deem of a sufficient quality to promote intellectual engagement on this platform.
-
-
-8. Follow the instructions of our staff - the rules are enforced according to their discretion, and any complaints are to be handled after the fact by a different member of staff; hence, argumentation regarding who has or has not broken the rules is largely out of order, though it may be tolerated by some of our staff.
-
-
-***Failure to abide by these rules will result in moderation. "I didn't know" isn't a valid excuse.***
-
-If you get banned, reflect on your actions, then apologize honestly and you'll probably be allowed back.
-
+Rule 7
+Complaints and contentions regarding moderation belong in one of the two complaints channels.
+The exception to this is when a staff member is ok with discussing the moderation in a normal channel. In all other cases, complaints about moderation should happen in the dedicated channels to avoid disrupting the main channels, as the purpose of moderation is to curb disruptive behaviour.
 '''
-    embed=discord.Embed(title="***Nameless Debates II***", description=embedtext, colour=0x7eff00)
-    embed.add_field(name="Server Guidelines", value="http://bit.ly/NDIIGuidelines", inline=True)
-    embed.add_field(name="TLDR Guidelines", value="http://bit.ly/NDTLDR", inline=True)
-    embed.add_field(name="Role Reification", value="http://bit.ly/ReactionRoles", inline=True)
-    embed.add_field(name="Ranking Rationale", value="http://bit.ly/RankingRationale", inline=True)
-    embed.add_field(name="Mediation Manual", value="http://bit.ly/NDMediationManual", inline=True)
-    embed.add_field(name="Fallacy Finder", value="http://bit.ly/FallacyFinder", inline=True)
-    embed.add_field(name="YouTube", value="https://www.youtube.com/namelessdebatesradio", inline=True)
+    embed=discord.Embed(title="***Strife***", description=embedtext, colour=0x7eff00)
 
     return embed
 
@@ -245,6 +243,41 @@ class MiscCog(commands.Cog):
             em = await getRulesEmbed()
             await member.send("", embed=em)
         await ctx.message.delete()
+
+    @rules.error
+    async def rules_error(self, ctx, error):
+        logging.error('Command "rules" failed due to the following error:')
+        logging.error(error)
+        await ctx.send('Error processing that request')
+
+    #__________________________________________________
+    @commands.command(pass_context=True, name='rule')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
+    async def rule(self, ctx, num):
+        """Tells the mentioned member to read a rule"""
+        sys.stdout.write(f'{ctx.message.author} ran command "rule"\n')
+        sys.stdout.flush()
+        logging.info(f'{ctx.message.author} ran command "rule"')
+        rules = self.bot.get_channel(rules_channelid)
+        found = False
+        num = int(num)
+        async for history in rules.history(limit=100):
+            msg = await rules.fetch_message(history.id)
+            rule = msg.content
+            if "Rule {}".format(num) in rule:
+                index1 = rule.find("Rule {}".format(num))
+                index2 = rule.find("Rule {}".format(num + 1))
+                if index2 > index1:
+                    rule = rule[index1-2:index2 - 4]
+                else:
+                    rule = rule[index1-2:]
+                await ctx.message.channel.send(rule)
+                found = True
+        if not found:
+            if num == 34:
+                await ctx.message.channel.send("Nice try...")
+            else:
+                await ctx.message.channel.send("I can't find that rule")
 
     @rules.error
     async def rules_error(self, ctx, error):
