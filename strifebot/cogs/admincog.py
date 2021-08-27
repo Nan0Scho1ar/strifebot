@@ -3,6 +3,7 @@ import logging
 import discord
 import sys
 import asyncio
+import json
 
 f = open("strife.conf", "r")
 for line in f:
@@ -124,7 +125,6 @@ class AdminCog(commands.Cog):
             await ctx.send('Error processing that request')
 
     #__________________________________________________
-
 
     @commands.command(pass_context=True, name='mute')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
@@ -278,6 +278,81 @@ class AdminCog(commands.Cog):
     @unmute.error
     async def unmute_error(self, ctx, error):
         logging.error('Command "unmute" failed due to the following error:')
+        logging.error(error)
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Missing required argument")
+        elif isinstance(error, commands.MissingAnyRole):
+            await ctx.send("Insufficient permissions")
+        else:
+            await ctx.send('Error processing that request')
+
+    #__________________________________________________
+
+
+    @commands.command(pass_context=True, name='raidmode')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
+    async def raidmode(self, ctx):
+        """Raidmode a user"""
+        sys.stdout.write(f'{ctx.message.author} ran command "raidmode"\n')
+        sys.stdout.flush()
+        logging.info(f'{ctx.message.author} ran command "raidmode"')
+        namelessLogs = ctx.bot.get_channel(logs_channelid)
+        with open("state.json", "r") as state_file:
+            state = json.load(state_file)
+        print(state['raidmode'])
+        if not state['raidmode']:
+            await ctx.bot.change_presence(activity=discord.Game('raidmode'))
+            state['raidmode'] = True
+            with open("state.json", "w") as state_file:
+                json.dump(state, state_file)
+            await ctx.message.channel.send("Raidmode enabled.")
+            em = discord.Embed(title="{} enabled raid mode".format(ctx.message.author), description="", colour=0xF2A013)
+            em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
+        else:
+            await ctx.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name='to your commands'))
+            state['raidmode'] = False
+            with open("state.json", "w") as state_file:
+                json.dump(state, state_file)
+            await ctx.message.channel.send("Raidmode disabled.")
+            em = discord.Embed(title="{} disabled raid mode".format(ctx.message.author), description="", colour=0xF2A013)
+            em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
+        await namelessLogs.send(embed=em)
+
+
+    @raidmode.error
+    async def raidmode_error(self, ctx, error):
+        logging.error('Command "raidmode" failed due to the following error: {}'.format(error))
+        logging.error(error)
+        print(type(error))
+        print(type(discord.ext.commands.errors.MissingAnyRole))
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Missing required argument")
+        elif isinstance(error, commands.MissingAnyRole):
+            await ctx.send("Insufficient permissions")
+        else:
+            await ctx.send('Error processing that request')
+
+    #__________________________________________________
+
+    @commands.command(pass_context=True, name='unraid')
+    @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
+    async def unraid(self, ctx, user, reason="No reason provided"):
+        """Unraid a user"""
+        sys.stdout.write(f'{ctx.message.author} ran command "unraid"\n')
+        sys.stdout.flush()
+        logging.info(f'{ctx.message.author} ran command "unraid"')
+        namelessLogs = ctx.bot.get_channel(logs_channelid)
+        commoners_role = ctx.guild.get_role(commoners_roleid)
+        peasant_role = ctx.guild.get_role(peasant_roleid)
+        reading_role = ctx.guild.get_role(ghost_roleid)
+        ghost_role = ctx.guild.get_role(ghost_roleid)
+        await namelessLogs.send(embed=em)
+        await ctx.message.channel.send("Unraidd {}\nReason `{}`".format(member, reason))
+        await ctx.message.delete()
+
+    @unraid.error
+    async def unraid_error(self, ctx, error):
+        logging.error('Command "unraid" failed due to the following error:')
         logging.error(error)
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Missing required argument")
