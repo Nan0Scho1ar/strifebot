@@ -3,6 +3,7 @@ import sys
 import logging
 import discord
 import random
+import json
 
 
 
@@ -26,6 +27,8 @@ for line in f:
         moderator_roleid = int(line.split("=")[-1:][0].strip())
     elif "clerk_roleid" in line:
         clerk_roleid = int(line.split("=")[-1:][0].strip())
+    elif "raid_roleid" in line:
+        raid_roleid = int(line.split("=")[-1:][0].strip())
 
     elif "cbbb" in line:
         cbbb = int(line.split("=")[-1:][0].strip())
@@ -87,17 +90,28 @@ class MiscCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        print("member joined")
+        print(raid_roleid)
+        with open("state.json", "r") as state_file:
+            state = json.load(state_file)
+        if state['raidmode']:
+            print("raid mode enabled")
+            raid_role = member.guild.get_role(raid_roleid)
+            print(raid_role)
+            await member.add_roles(raid_role)
         try:
-            rules = self.bot.get_channel(rules_channelid)
-            roles = self.bot.get_channel(roles_channelid)
-            main = self.bot.get_channel(general_channelid)
-            if main is not None and rules is not None and roles is not None and member.mention is not None:
-                await main.send("Hello {}, welcome to Nameless Debates II. Please read {} and {} text channels before participating in the server (or else)!".format(member.mention, rules.mention, roles.mention))
+            with open("state.json", "r") as state_file:
+                state = json.load(state_file)
+            if not state['raidmode']:
+                rules = self.bot.get_channel(rules_channelid)
+                roles = self.bot.get_channel(roles_channelid)
+                main = self.bot.get_channel(general_channelid)
+                if main is not None and rules is not None and roles is not None and member.mention is not None:
+                    await main.send("Hello {}, welcome to Strife. Please read {} and {} text channels before participating in the server (or else)!".format(member.mention, rules.mention, roles.mention))
         except:
-          print("Error posting greeter message")
+             print("Error posting greeter message")
 
     #__________________________________________________
 
