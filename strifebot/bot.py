@@ -3,7 +3,9 @@ from discord.ext import commands
 import logging
 import sys
 
-bot = commands.Bot(command_prefix='|')
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix='|', intents=intents)
 logging.basicConfig(level=logging.INFO)
 
 #Removed searchcog and musiccog becuase dependencies issues
@@ -18,6 +20,7 @@ for line in f:
         continue
     elif "TOKEN" in line:
         TOKEN = line.split("=")[-1].strip()
+
 
 @bot.event
 async def on_ready():
