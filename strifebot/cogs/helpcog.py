@@ -141,9 +141,8 @@ help2text = '''
 |commend                                          Commends a user
 |read                                             Puts a user in reading
 |unread                                           Removes user from reading
-|unread                                           Removes user from reading
 |raidmode                                         Toggles raidmode (applies raid role to new joins)
-|unmode                                           Removes raid role from a user
+|unraid                                           Removes raid role from a user
 ```
 '''
 
