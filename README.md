@@ -22,6 +22,7 @@ clerk_roleid=
 commoners_roleid=
 peasant_roleid=
 ghost_roleid=
+raid_roleid=
 
 rules_channelid=
 roles_channelid=

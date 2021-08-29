@@ -299,7 +299,6 @@ class AdminCog(commands.Cog):
         namelessLogs = ctx.bot.get_channel(logs_channelid)
         with open("state.json", "r") as state_file:
             state = json.load(state_file)
-        print(state['raidmode'])
         if not state['raidmode']:
             await ctx.bot.change_presence(activity=discord.Game('raidmode'))
             state['raidmode'] = True
@@ -336,18 +335,23 @@ class AdminCog(commands.Cog):
 
     @commands.command(pass_context=True, name='unraid')
     @commands.has_any_role(owner_roleid, admin_roleid, seniorMod_roleid, moderator_roleid, clerk_roleid, cbbb)
-    async def unraid(self, ctx, user, reason="No reason provided"):
+    async def unraid(self, ctx, user):
         """Unraid a user"""
         sys.stdout.write(f'{ctx.message.author} ran command "unraid"\n')
         sys.stdout.flush()
         logging.info(f'{ctx.message.author} ran command "unraid"')
         namelessLogs = ctx.bot.get_channel(logs_channelid)
-        commoners_role = ctx.guild.get_role(commoners_roleid)
-        peasant_role = ctx.guild.get_role(peasant_roleid)
-        reading_role = ctx.guild.get_role(ghost_roleid)
-        ghost_role = ctx.guild.get_role(ghost_roleid)
+        raid_role = ctx.guild.get_role(raid_roleid)
+        if user.isdigit():
+            member = await ctx.message.guild.fetch_member(int(user))
+        else:
+            member = ctx.message.mentions[0]
+        await member.remove_roles(raid_role)
+        em = discord.Embed(title="Removed raid from {}".format(member), description="", colour=0x7eff00)
+        em.set_thumbnail(url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(member))
+        em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
         await namelessLogs.send(embed=em)
-        await ctx.message.channel.send("Unraidd {}\nReason `{}`".format(member, reason))
+        await ctx.message.channel.send("Unraided {}".format(member))
         await ctx.message.delete()
 
     @unraid.error
