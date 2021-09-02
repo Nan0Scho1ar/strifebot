@@ -27,6 +27,8 @@ for line in f:
         reading_roleid = int(line.split("=")[-1:][0].strip())
     elif "ghost_roleid" in line:
         ghost_roleid = int(line.split("=")[-1:][0].strip())
+    elif "raid_roleid" in line:
+        raid_roleid = int(line.split("=")[-1:][0].strip())
 
     elif "cbbb" in line:
         cbbb = int(line.split("=")[-1:][0].strip())
@@ -352,7 +354,7 @@ class AdminCog(commands.Cog):
         em.set_author(name=ctx.message.author, icon_url="https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.png?size=1024".format(ctx.message.author))
         await namelessLogs.send(embed=em)
         await ctx.message.channel.send("Unraided {}".format(member))
-        await ctx.message.delete()
+        #await ctx.message.delete()
 
     @unraid.error
     async def unraid_error(self, ctx, error):
