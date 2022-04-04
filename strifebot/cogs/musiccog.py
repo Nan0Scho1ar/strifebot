@@ -29,6 +29,7 @@ import sys
 import random
 import traceback
 import wavelink
+import time
 from discord.ext import commands
 from typing import Union
 
@@ -82,7 +83,7 @@ class MusicCog(commands.Cog):
         self.controllers = {}
 
         if not hasattr(bot, 'wavelink'):
-            self.bot.wavelink = wavelink.Client(self.bot)
+            self.bot.wavelink = wavelink.Client(bot=self.bot)
 
         self.bot.loop.create_task(self.start_nodes())
 
@@ -91,9 +92,10 @@ class MusicCog(commands.Cog):
 
         # Initiate our nodes. For this example we will use one server.
         # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
-        node = await self.bot.wavelink.initiate_node(host='127.0.0.1',
+        time.sleep(10)
+        node = await self.bot.wavelink.initiate_node(host='lavalink',
                                                      port=2333,
-                                                     rest_uri='http://127.0.0.1:2333',
+                                                     rest_uri='lavalink:2333',
                                                      password='testington',
                                                      identifier='TEST',
                                                      region='sydney')

@@ -1,9 +1,15 @@
+version: "3.9"
 services:
   strifebot:
     build: strifebot
     volumes:
       - ./strifebot:/usr/src/strifebot
-    links:
-      - lavalink
+    restart: on-failure
+    depends_on:
+      lavalink:
+        condition: service_started
   lavalink:
     build: lavalink
+    ports:
+      - 2333
+    restart: on-failure
