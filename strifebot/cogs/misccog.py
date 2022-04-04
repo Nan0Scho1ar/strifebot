@@ -58,12 +58,12 @@ https://discord.com/guidelines
 Rule 2
 Keep content and discussion in their appropriate channels.
 Channel names indicate what the channels are meant for, and channel descriptions elaborate on what specifically belongs in each channel.
-Rule 3 
+Rule 3
 Don't be excessively toxic towards members.
 Inflammatory and toxic behavior towards other members will be moderated. Insults aren't necessarily moderated, but severe ones or continued mild toxicity over a prolonged period of time will be addressed. Examples of severe insults include attacks based on personal traits, unjustified accusations meant to defame, etc.
 
 
-Rule 4 
+Rule 4
 Don't be disruptive towards serious conversations.
 Trolling, shitposting, LARPing and spamming that stifles, interrupts or prevents serious discussion will be moderated. Serious conversation refers to conversation that does not fall into any of the categories mentioned above.
 
@@ -96,22 +96,20 @@ class MiscCog(commands.Cog):
         print(raid_roleid)
         with open("state.json", "r") as state_file:
             state = json.load(state_file)
-        if state['raidmode']:
-            print("raid mode enabled")
-            raid_role = member.guild.get_role(raid_roleid)
-            print(raid_role)
-            await member.add_roles(raid_role)
         try:
-            with open("state.json", "r") as state_file:
-                state = json.load(state_file)
-            if not state['raidmode']:
-                rules = self.bot.get_channel(rules_channelid)
-                roles = self.bot.get_channel(roles_channelid)
-                main = self.bot.get_channel(general_channelid)
-                if main is not None and rules is not None and roles is not None and member.mention is not None:
-                    await main.send("Hello {}, welcome to Strife. Please read {} and {} text channels before participating in the server (or else)!".format(member.mention, rules.mention, roles.mention))
+            if state['raidmode']:
+                print("raid mode enabled")
+                raid_role = member.guild.get_role(raid_roleid)
+                print(raid_role)
+                await member.add_roles(raid_role)
+            #elif not state['raidmode']:
+                #rules = self.bot.get_channel(rules_channelid)
+                #roles = self.bot.get_channel(roles_channelid)
+                #main = self.bot.get_channel(general_channelid)
+                #if main is not None and rules is not None and roles is not None and member.mention is not None:
+                    #await main.send("Hello {}, welcome to Strife. Please read {} and {} text channels before participating in the server (or else)!".format(member.mention, rules.mention, roles.mention))
         except:
-             print("Error posting greeter message")
+             print("On_join error")
 
     #__________________________________________________
 
