@@ -1,0 +1,9 @@
+services:
+  strifebot:
+    build: strifebot
+    volumes:
+      - ./strifebot:/usr/src/strifebot
+    links:
+      - lavalink
+  lavalink:
+    build: lavalink

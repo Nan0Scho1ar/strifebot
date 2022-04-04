@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix='|', intents=intents)
 logging.basicConfig(level=logging.INFO)
 
 #Removed searchcog and musiccog becuase dependencies issues
-modules = ["cogs.admincog", "cogs.topiccog", "cogs.categorycog", "cogs.debatecog", "cogs.misccog", "cogs.complaintscog", "cogs.memecog", "cogs.currencycog", "cogs.inventorycog", "cogs.nominationcog", "cogs.searchcog"] #, "cogs.helpcog", "cogs.musiccog"]
+modules = ["cogs.admincog", "cogs.topiccog", "cogs.categorycog", "cogs.debatecog", "cogs.misccog", "cogs.complaintscog", "cogs.memecog", "cogs.currencycog", "cogs.inventorycog", "cogs.nominationcog", "cogs.searchcog", "cogs.helpcog", "cogs.musiccog"]
 
 for ext in modules:
     bot.load_extension(ext)
